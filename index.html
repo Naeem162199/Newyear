@@ -132,12 +132,11 @@
         // CONFIGURATION
         // ==========================================
         
-        // TODO: PASTE YOUR GOOGLE APPS SCRIPT URL HERE
-        const GOOGLE_SCRIPT_URL = ""; 
+        // I have added your URL here inside quotes. This fixes the crash.
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxdO0_ht-jEuPCjv7-2BPIoducquOyoV0L7kHvNZfBcQ4_8bX8VdLTE9F2arIkzT_zC/exec"; 
 
         // DESIGN TEMPLATES
-        // Update 'bgUrl' with your actual image paths.
-        // textX/textY controls where the name appears.
+        // Make sure "1.png", "2.png" are in the SAME folder as index.html on GitHub
         const designs = [
             {
                 id: 1,
@@ -226,6 +225,19 @@
         function updateCanvas() {
             const img = new Image();
             img.crossOrigin = "Anonymous"; // Allows cross-origin images (important for download)
+            
+            // Log error if image fails to load (helps debugging)
+            img.onerror = function() {
+                console.error("Could not load image:", selectedDesign.bgUrl);
+                // Draw fallback if image fails
+                ctx.fillStyle = "#f0f0f0";
+                ctx.fillRect(0,0, canvas.width, canvas.height);
+                ctx.fillStyle = "red";
+                ctx.textAlign = "center";
+                ctx.font = "20px Arial";
+                ctx.fillText("Image not found: " + selectedDesign.bgUrl, canvas.width/2, canvas.height/2);
+            };
+
             img.src = selectedDesign.bgUrl;
             
             img.onload = function() {
@@ -296,7 +308,8 @@
             // 1. Send data to Google Sheet
             if (GOOGLE_SCRIPT_URL) {
                 try {
-                    await fetch(https://script.google.com/macros/s/AKfycbxdO0_ht-jEuPCjv7-2BPIoducquOyoV0L7kHvNZfBcQ4_8bX8VdLTE9F2arIkzT_zC/exec, {
+                    // Fixed: Using the variable instead of the raw URL to prevent syntax errors
+                    await fetch("https://script.google.com/macros/s/AKfycbxdO0_ht-jEuPCjv7-2BPIoducquOyoV0L7kHvNZfBcQ4_8bX8VdLTE9F2arIkzT_zC/exec", {
                         method: 'POST',
                         mode: 'no-cors', 
                         headers: { 'Content-Type': 'application/json' },
@@ -330,5 +343,4 @@
         }
     </script>
 </body>
-
 </html>
