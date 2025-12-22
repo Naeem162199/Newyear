@@ -4,53 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Doctor's New Year Greeting Generator</title>
-    <!-- Tailwind CSS for layout -->
+    <!-- Tailwind CSS (CDN) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome for icons -->
+    <!-- FontAwesome (CDN) -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         /* Import Fonts */
         @import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:wght@700&display=swap');
 
-        body {
-            font-family: 'Lato', sans-serif;
-            background-color: #f0f4f8;
-        }
-        
-        h1, h2, h3 {
-            font-family: 'Playfair Display', serif;
-        }
+        body { font-family: 'Lato', sans-serif; background-color: #f0f4f8; }
+        h1, h2, h3 { font-family: 'Playfair Display', serif; }
 
-        /* Design Selection Styling */
-        .design-card {
-            transition: all 0.3s ease;
-            border: 3px solid transparent;
-        }
-        
-        .design-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-        }
-        
-        .design-card.selected {
-            border-color: #0ea5e9; /* Sky-500 */
-            transform: scale(1.02);
-            box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.2);
-        }
-
-        /* Canvas Styling */
-        canvas {
-            max-width: 100%;
-            height: auto;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
+        .design-card { transition: all 0.2s ease; border: 3px solid transparent; }
+        .design-card:hover { transform: translateY(-3px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        .design-card.selected { border-color: #0ea5e9; transform: scale(1.02); box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.2); }
+        canvas { max-width: 100%; height: auto; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center py-6 px-4">
 
-    <!-- 1. Logo Placeholder -->
+    <!-- Logo -->
     <div class="mb-6">
-        <!-- TODO: Replace 'src' with your actual logo file path (e.g., 'assets/logo.png') -->
         <img src="https://via.placeholder.com/200x80/e0f2fe/0ea5e9?text=Your+Logo+Here" alt="Clinic Logo" class="h-20 object-contain">
     </div>
 
@@ -60,30 +34,26 @@
         <p class="text-slate-500">Select a template, personalize it, and share.</p>
     </div>
 
-    <!-- Main Grid: Mobile=Flex Column, Desktop=Grid -->
+    <!-- Main Content -->
     <div class="w-full max-w-6xl flex flex-col lg:grid lg:grid-cols-12 gap-6 lg:gap-8">
         
-        <!-- LEFT COLUMN: Steps 1 & 2 -->
+        <!-- Controls -->
         <div class="lg:col-span-4 lg:col-start-1 lg:row-start-1 space-y-6">
-            
-            <!-- Step 1: Design Selection -->
+            <!-- 1. Design -->
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
                 <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center">
                     <span class="bg-sky-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs mr-2">1</span>
                     Select Design
                 </h2>
-                <div class="grid grid-cols-2 gap-3" id="designGrid">
-                    <!-- Designs are injected here via JavaScript -->
-                </div>
+                <div class="grid grid-cols-2 gap-3" id="designGrid"></div>
             </div>
 
-            <!-- Step 2: Details -->
+            <!-- 2. Details -->
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
                 <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center">
                     <span class="bg-sky-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs mr-2">2</span>
                     Your Details
                 </h2>
-                
                 <label class="block text-sm font-medium text-slate-700 mb-1">Doctor's Name</label>
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -94,22 +64,20 @@
                         placeholder="John Doe"
                         oninput="updateCanvas()">
                 </div>
-                <p class="text-xs text-slate-400 mt-2">Preview updates automatically.</p>
             </div>
         </div>
 
-        <!-- RIGHT COLUMN: Preview Canvas -->
+        <!-- Preview -->
         <div class="lg:col-span-8 lg:col-start-5 lg:row-start-1 lg:row-span-2">
             <div class="bg-white p-4 rounded-xl shadow-lg border border-slate-100 flex justify-center items-center bg-slate-50 sticky top-4">
-                <!-- The Canvas where the image is generated -->
                 <canvas id="previewCanvas" width="800" height="600" class="bg-white"></canvas>
             </div>
-            <div class="text-center mt-4 mb-2 lg:mb-0">
+            <div class="text-center mt-4">
                 <span class="text-xs text-slate-400 uppercase tracking-widest font-semibold">Live Preview</span>
             </div>
         </div>
 
-        <!-- BOTTOM LEFT (Desktop) / BOTTOM (Mobile): Download Button -->
+        <!-- Download -->
         <div class="lg:col-span-4 lg:col-start-1 lg:row-start-2 h-fit">
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
                 <h2 class="text-xl font-bold text-slate-800 mb-4 flex items-center">
@@ -117,100 +85,61 @@
                     Download
                 </h2>
                 <button onclick="downloadCard()" id="downloadBtn" class="w-full flex justify-center items-center space-x-2 bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200">
-                    <i class="fas fa-download"></i>
-                    <span>Download Image</span>
+                    <i class="fas fa-download"></i> <span>Download Image</span>
                 </button>
                 <p id="statusMsg" class="text-center text-xs text-slate-500 mt-3 hidden"></p>
             </div>
         </div>
-
     </div>
 
-    <!-- Application Logic -->
     <script>
-        // ==========================================
         // CONFIGURATION
-        // ==========================================
-        
-        // I have added your URL here inside quotes. This fixes the crash.
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxdO0_ht-jEuPCjv7-2BPIoducquOyoV0L7kHvNZfBcQ4_8bX8VdLTE9F2arIkzT_zC/exec"; 
 
-        // DESIGN TEMPLATES
-        // Make sure "1.png", "2.png" are in the SAME folder as index.html on GitHub
+        // DESIGNS (Ensure 1.png, 2.png, etc. are compressed!)
         const designs = [
-            {
-                id: 1,
-                name: "Classic Blue",
-                color: "#0284c7",
-                textColor: "#1e293b",
-                bgUrl: "1.png",
-                textX: 760, // 40px padding from right
-                textY: 550, // 50px padding from bottom
-                textAlign: "right"
-            },
-            {
-                id: 2,
-                name: "Medical Green",
-                color: "#059669",
-                textColor: "#064e3b",
-                bgUrl: "2.png",
-                textX: 760,
-                textY: 550,
-                textAlign: "right"
-            },
-            {
-                id: 3,
-                name: "Minimalist",
-                color: "#475569",
-                textColor: "#0f172a",
-                bgUrl: "3.png",
-                textX: 760,
-                textY: 550,
-                textAlign: "right"
-            },
-            {
-                id: 4,
-                name: "Warm Care",
-                color: "#e11d48",
-                textColor: "#881337",
-                bgUrl: "4.png",
-                textX: 760,
-                textY: 550,
-                textAlign: "right"
-            }
+            { id: 1, name: "Classic Blue", color: "#0284c7", textColor: "#1e293b", bgUrl: "1.png", textX: 760, textY: 550, textAlign: "right" },
+            { id: 2, name: "Medical Green", color: "#059669", textColor: "#064e3b", bgUrl: "3.png", textX: 760, textY: 550, textAlign: "right" },
+            { id: 3, name: "Minimalist", color: "#475569", textColor: "#0f172a", bgUrl: "4.png", textX: 760, textY: 550, textAlign: "right" },
+            { id: 4, name: "Warm Care", color: "#e11d48", textColor: "#881337", bgUrl: "2.png", textX: 760, textY: 550, textAlign: "right" }
         ];
-
-        // ==========================================
-        // CORE LOGIC
-        // ==========================================
 
         let selectedDesign = designs[0];
         const canvas = document.getElementById('previewCanvas');
         const ctx = canvas.getContext('2d');
         const nameInput = document.getElementById('nameInput');
         
-        // Initialize on load
+        // CACHE for Preloaded Images
+        const imageCache = {};
+
         window.onload = function() {
             renderDesignGrid();
-            updateCanvas();
+            preloadImages(); // Start loading all images immediately
         };
 
-        // Render the small design selector buttons
+        // NEW: Preload all images in the background
+        function preloadImages() {
+            designs.forEach(design => {
+                const img = new Image();
+                img.crossOrigin = "Anonymous";
+                img.src = design.bgUrl;
+                // Once loaded, store it in the cache object
+                img.onload = () => {
+                    imageCache[design.bgUrl] = img;
+                    // If this is the currently selected design, update canvas now that it's ready
+                    if(selectedDesign.id === design.id) updateCanvas();
+                };
+            });
+        }
+
         function renderDesignGrid() {
             const grid = document.getElementById('designGrid');
             grid.innerHTML = '';
-
             designs.forEach(design => {
                 const div = document.createElement('div');
                 div.className = `design-card cursor-pointer rounded-lg overflow-hidden relative ${design.id === selectedDesign.id ? 'selected' : ''}`;
                 div.onclick = () => selectDesign(design);
-                
-                // Color block preview
-                div.innerHTML = `
-                    <div style="background-color: ${design.color}20; height: 80px;" class="flex items-center justify-center">
-                        <span style="color: ${design.color}" class="font-bold text-xs">${design.name}</span>
-                    </div>
-                `;
+                div.innerHTML = `<div style="background-color: ${design.color}20; height: 80px;" class="flex items-center justify-center"><span style="color: ${design.color}" class="font-bold text-xs">${design.name}</span></div>`;
                 grid.appendChild(div);
             });
         }
@@ -221,95 +150,69 @@
             updateCanvas();
         }
 
-        // Draw the image and text onto the canvas
         function updateCanvas() {
-            const img = new Image();
-            img.crossOrigin = "Anonymous"; // Allows cross-origin images (important for download)
-            
-            // Log error if image fails to load (helps debugging)
-            img.onerror = function() {
-                console.error("Could not load image:", selectedDesign.bgUrl);
-                // Draw fallback if image fails
-                ctx.fillStyle = "#f0f0f0";
-                ctx.fillRect(0,0, canvas.width, canvas.height);
-                ctx.fillStyle = "red";
-                ctx.textAlign = "center";
-                ctx.font = "20px Arial";
-                ctx.fillText("Image not found: " + selectedDesign.bgUrl, canvas.width/2, canvas.height/2);
-            };
-
-            img.src = selectedDesign.bgUrl;
-            
-            img.onload = function() {
-                // 1. Clear and Draw Background Image
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-                // 2. Prepare Name Text
-                const name = nameInput.value ? "Dr. " + nameInput.value : "Dr. Name Here";
-                
-                // 3. Dynamic Font Scaling (Prevents clipping)
-                let fontSize = 40;
-                ctx.font = `bold ${fontSize}px 'Playfair Display', serif`;
-                
-                // Max width allowed is 60% of canvas width (since we are in the corner)
-                const maxTextWidth = canvas.width * 0.6; 
-                
-                // Shrink text if it's too long
-                while (ctx.measureText(name).width > maxTextWidth && fontSize > 15) {
-                    fontSize -= 2;
-                    ctx.font = `bold ${fontSize}px 'Playfair Display', serif`;
-                }
-
-                ctx.fillStyle = selectedDesign.textColor;
-                
-                // 4. Draw Text
-                // Set alignment based on design config (defaulting to right for bottom-right placement)
-                const align = selectedDesign.textAlign || "right";
-                ctx.textAlign = align;
-                ctx.fillText(name, selectedDesign.textX, selectedDesign.textY);
-                
-                // 5. Draw Decorative Underline
-                const textWidth = ctx.measureText(name).width;
-                let lineX;
-                
-                // Calculate line position based on alignment
-                if (align === "right") {
-                    lineX = selectedDesign.textX - textWidth;
-                } else if (align === "left") {
-                    lineX = selectedDesign.textX;
-                } else {
-                    lineX = selectedDesign.textX - (textWidth / 2);
-                }
-                
-                ctx.fillRect(lineX, selectedDesign.textY + 15, textWidth, 2);
-            };
+            // Check if image is in cache
+            if (imageCache[selectedDesign.bgUrl]) {
+                drawToCanvas(imageCache[selectedDesign.bgUrl]);
+            } else {
+                // Fallback if not yet preloaded (load it now)
+                const img = new Image();
+                img.crossOrigin = "Anonymous";
+                img.src = selectedDesign.bgUrl;
+                img.onload = () => {
+                    imageCache[selectedDesign.bgUrl] = img;
+                    drawToCanvas(img);
+                };
+            }
         }
 
-        // Handle Download and Google Sheet submission
+        function drawToCanvas(img) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+            const name = nameInput.value ? "Dr. " + nameInput.value : "Dr. Name Here";
+            
+            // Font Scaling
+            let fontSize = 40;
+            ctx.font = `bold ${fontSize}px 'Playfair Display', serif`;
+            const maxTextWidth = canvas.width * 0.6; 
+            while (ctx.measureText(name).width > maxTextWidth && fontSize > 15) {
+                fontSize -= 2;
+                ctx.font = `bold ${fontSize}px 'Playfair Display', serif`;
+            }
+
+            ctx.fillStyle = selectedDesign.textColor;
+            const align = selectedDesign.textAlign || "right";
+            ctx.textAlign = align;
+            ctx.fillText(name, selectedDesign.textX, selectedDesign.textY);
+
+            // Underline
+            const textWidth = ctx.measureText(name).width;
+            let lineX;
+            if (align === "right") lineX = selectedDesign.textX - textWidth;
+            else if (align === "left") lineX = selectedDesign.textX;
+            else lineX = selectedDesign.textX - (textWidth / 2);
+            
+            ctx.fillRect(lineX, selectedDesign.textY + 15, textWidth, 2);
+        }
+
         async function downloadCard() {
             const btn = document.getElementById('downloadBtn');
             const status = document.getElementById('statusMsg');
             const name = nameInput.value;
 
-            if(!name) {
-                alert("Please enter your name first!");
-                nameInput.focus();
-                return;
-            }
+            if(!name) { alert("Please enter your name first!"); nameInput.focus(); return; }
 
-            // Disable button and show loading state
             btn.disabled = true;
             const originalBtnContent = btn.innerHTML;
             btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> <span>Processing...</span>`;
             status.classList.remove('hidden');
-            status.innerText = "Saving record and generating image...";
+            status.innerText = "Saving record...";
 
-            // 1. Send data to Google Sheet
+            // Send to Google Sheet
             if (GOOGLE_SCRIPT_URL) {
                 try {
-                    // Fixed: Using the variable instead of the raw URL to prevent syntax errors
-                    await fetch("https://script.google.com/macros/s/AKfycbxdO0_ht-jEuPCjv7-2BPIoducquOyoV0L7kHvNZfBcQ4_8bX8VdLTE9F2arIkzT_zC/exec", {
+                    await fetch(GOOGLE_SCRIPT_URL, {
                         method: 'POST',
                         mode: 'no-cors', 
                         headers: { 'Content-Type': 'application/json' },
@@ -319,25 +222,20 @@
                             timestamp: new Date().toISOString()
                         })
                     });
-                } catch (e) { console.error("Tracking error:", e); }
+                } catch (e) { console.error(e); }
             }
 
-            // 2. Trigger Download
-            // Small timeout to allow UI to update
+            // Download
             setTimeout(() => {
                 const link = document.createElement('a');
-                // Sanitize filename
                 const safeName = name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
                 link.download = `greeting_card_${safeName}.png`;
-                link.href = canvas.toDataURL(); // Convert canvas to image
+                link.href = canvas.toDataURL();
                 link.click();
 
-                // Reset UI
                 btn.disabled = false;
                 btn.innerHTML = originalBtnContent;
                 status.innerText = "Download started!";
-                
-                // Hide status message after 3 seconds
                 setTimeout(() => { status.classList.add('hidden'); }, 3000);
             }, 800);
         }
