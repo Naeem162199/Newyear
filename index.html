@@ -4,12 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Doctor's New Year Greeting Generator</title>
-    <!-- Tailwind CSS (CDN) -->
+    
+    <!-- Preconnect to Google Fonts for faster connection -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Tailwind CSS (Script Version - parses rapidly) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome (CDN) -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
     <style>
-        /* Import Fonts */
+        /* Import Fonts with display=swap for instant text rendering */
         @import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:wght@700&display=swap');
 
         body { font-family: 'Lato', sans-serif; background-color: #f0f4f8; }
@@ -19,6 +23,10 @@
         .design-card:hover { transform: translateY(-3px); box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
         .design-card.selected { border-color: #0ea5e9; transform: scale(1.02); box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.2); }
         canvas { max-width: 100%; height: auto; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        
+        /* Spinner Animation */
+        .spinner { animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="min-h-screen flex flex-col items-center py-6 px-4">
@@ -85,7 +93,9 @@
                     Download
                 </h2>
                 <button onclick="downloadCard()" id="downloadBtn" class="w-full flex justify-center items-center space-x-2 bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200">
-                    <i class="fas fa-download"></i> <span>Download Image</span>
+                    <!-- SVG Icon instead of FontAwesome -->
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    <span id="btnText">Download Image</span>
                 </button>
                 <p id="statusMsg" class="text-center text-xs text-slate-500 mt-3 hidden"></p>
             </div>
@@ -96,7 +106,7 @@
         // CONFIGURATION
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxdO0_ht-jEuPCjv7-2BPIoducquOyoV0L7kHvNZfBcQ4_8bX8VdLTE9F2arIkzT_zC/exec"; 
 
-        // DESIGNS (Ensure 1.png, 2.png, etc. are compressed!)
+        // DESIGNS
         const designs = [
             { id: 1, name: "Classic Blue", color: "#0284c7", textColor: "#1e293b", bgUrl: "1.png", textX: 760, textY: 550, textAlign: "right" },
             { id: 2, name: "Medical Green", color: "#059669", textColor: "#064e3b", bgUrl: "3.png", textX: 760, textY: 550, textAlign: "right" },
@@ -104,32 +114,20 @@
             { id: 4, name: "Warm Care", color: "#e11d48", textColor: "#881337", bgUrl: "2.png", textX: 760, textY: 550, textAlign: "right" }
         ];
 
+        // SETUP
         let selectedDesign = designs[0];
         const canvas = document.getElementById('previewCanvas');
         const ctx = canvas.getContext('2d');
         const nameInput = document.getElementById('nameInput');
-        
-        // CACHE for Preloaded Images
         const imageCache = {};
 
-        window.onload = function() {
-            renderDesignGrid();
-            preloadImages(); // Start loading all images immediately
-        };
+        // INITIALIZE IMMEDIATELY (Don't wait for window.onload)
+        init();
 
-        // NEW: Preload all images in the background
-        function preloadImages() {
-            designs.forEach(design => {
-                const img = new Image();
-                img.crossOrigin = "Anonymous";
-                img.src = design.bgUrl;
-                // Once loaded, store it in the cache object
-                img.onload = () => {
-                    imageCache[design.bgUrl] = img;
-                    // If this is the currently selected design, update canvas now that it's ready
-                    if(selectedDesign.id === design.id) updateCanvas();
-                };
-            });
+        function init() {
+            renderDesignGrid();
+            drawLoadingState(); // Show "Loading" text on canvas immediately
+            preloadImages();    // Start fetching images
         }
 
         function renderDesignGrid() {
@@ -144,6 +142,31 @@
             });
         }
 
+        function drawLoadingState() {
+            ctx.fillStyle = "#f8fafc";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.font = "20px Lato";
+            ctx.fillStyle = "#94a3b8";
+            ctx.textAlign = "center";
+            ctx.fillText("Loading Preview...", canvas.width/2, canvas.height/2);
+        }
+
+        function preloadImages() {
+            designs.forEach(design => {
+                const img = new Image();
+                img.crossOrigin = "Anonymous";
+                img.src = design.bgUrl;
+                img.onload = () => {
+                    imageCache[design.bgUrl] = img;
+                    if(selectedDesign.id === design.id) updateCanvas();
+                };
+                // Handle errors nicely
+                img.onerror = () => {
+                    console.error("Failed to load: " + design.bgUrl);
+                }
+            });
+        }
+
         function selectDesign(design) {
             selectedDesign = design;
             renderDesignGrid();
@@ -151,11 +174,12 @@
         }
 
         function updateCanvas() {
-            // Check if image is in cache
+            // Check cache
             if (imageCache[selectedDesign.bgUrl]) {
                 drawToCanvas(imageCache[selectedDesign.bgUrl]);
             } else {
-                // Fallback if not yet preloaded (load it now)
+                drawLoadingState();
+                // If not cached yet, create a temp loader for this specific action
                 const img = new Image();
                 img.crossOrigin = "Anonymous";
                 img.src = selectedDesign.bgUrl;
@@ -174,11 +198,13 @@
             
             // Font Scaling
             let fontSize = 40;
-            ctx.font = `bold ${fontSize}px 'Playfair Display', serif`;
+            // Use system font fallback until Google Font loads to prevent invisible text
+            ctx.font = `bold ${fontSize}px 'Playfair Display', serif, system-ui`;
+            
             const maxTextWidth = canvas.width * 0.6; 
             while (ctx.measureText(name).width > maxTextWidth && fontSize > 15) {
                 fontSize -= 2;
-                ctx.font = `bold ${fontSize}px 'Playfair Display', serif`;
+                ctx.font = `bold ${fontSize}px 'Playfair Display', serif, system-ui`;
             }
 
             ctx.fillStyle = selectedDesign.textColor;
@@ -198,18 +224,20 @@
 
         async function downloadCard() {
             const btn = document.getElementById('downloadBtn');
+            const btnText = document.getElementById('btnText');
             const status = document.getElementById('statusMsg');
             const name = nameInput.value;
 
             if(!name) { alert("Please enter your name first!"); nameInput.focus(); return; }
 
             btn.disabled = true;
-            const originalBtnContent = btn.innerHTML;
-            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> <span>Processing...</span>`;
+            const originalText = btnText.innerText;
+            
+            // SVG Spinner
+            btnText.innerHTML = "Processing...";
             status.classList.remove('hidden');
             status.innerText = "Saving record...";
 
-            // Send to Google Sheet
             if (GOOGLE_SCRIPT_URL) {
                 try {
                     await fetch(GOOGLE_SCRIPT_URL, {
@@ -225,7 +253,6 @@
                 } catch (e) { console.error(e); }
             }
 
-            // Download
             setTimeout(() => {
                 const link = document.createElement('a');
                 const safeName = name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
@@ -234,10 +261,10 @@
                 link.click();
 
                 btn.disabled = false;
-                btn.innerHTML = originalBtnContent;
+                btnText.innerText = originalText;
                 status.innerText = "Download started!";
                 setTimeout(() => { status.classList.add('hidden'); }, 3000);
-            }, 800);
+            }, 500);
         }
     </script>
 </body>
