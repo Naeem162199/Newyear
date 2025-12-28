@@ -33,6 +33,7 @@
 
     <!-- Logo -->
     <div class="mb-6">
+        <!-- Replace src with your actual logo path -->
         <img src="https://via.placeholder.com/200x80/e0f2fe/0ea5e9?text=Your+Logo+Here" alt="Clinic Logo" class="h-20 object-contain">
     </div>
 
@@ -62,15 +63,36 @@
                     <span class="bg-sky-600 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs mr-2">2</span>
                     Your Details
                 </h2>
-                <label class="block text-sm font-medium text-slate-700 mb-1">Doctor's Name</label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span class="text-slate-400">Dr.</span>
+                
+                <!-- Custom Message Input (Moved to Top) -->
+                <div class="mb-4">
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-sm font-medium text-slate-700">Custom Message</label>
+                        <span id="msgCount" class="text-xs text-slate-400 font-mono">0/28</span>
                     </div>
-                    <input type="text" id="nameInput" 
-                        class="pl-10 block w-full rounded-md border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm p-3 border" 
-                        placeholder="John Doe"
+                    <input type="text" id="messageInput" maxlength="28"
+                        class="block w-full rounded-md border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm p-3 border" 
+                        placeholder="e.g. Wishing you good health"
                         oninput="updateCanvas()">
+                    <p class="text-xs text-slate-400 mt-1">Appears above your name.</p>
+                </div>
+
+                <!-- Name Input (Moved Below) -->
+                <div class="mb-2">
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block text-sm font-medium text-slate-700">Doctor's Name</label>
+                        <span id="nameCount" class="text-xs text-slate-400 font-mono">0/25</span>
+                    </div>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="text-slate-400">Dr.</span>
+                        </div>
+                        <input type="text" id="nameInput" maxlength="25"
+                            class="pl-10 block w-full rounded-md border-slate-300 shadow-sm focus:border-sky-500 focus:ring-sky-500 sm:text-sm p-3 border" 
+                            placeholder="John Doe"
+                            oninput="updateCanvas()">
+                    </div>
+                    <p class="text-xs text-slate-400 mt-1">Appears in the center.</p>
                 </div>
             </div>
         </div>
@@ -93,7 +115,7 @@
                     Download
                 </h2>
                 <button onclick="downloadCard()" id="downloadBtn" class="w-full flex justify-center items-center space-x-2 bg-sky-600 hover:bg-sky-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200">
-                    <!-- SVG Icon instead of FontAwesome -->
+                    <!-- SVG Icon -->
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                     <span id="btnText">Download Image</span>
                 </button>
@@ -103,31 +125,46 @@
     </div>
 
     <script>
+        // ==========================================
         // CONFIGURATION
+        // ==========================================
+        
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxdO0_ht-jEuPCjv7-2BPIoducquOyoV0L7kHvNZfBcQ4_8bX8VdLTE9F2arIkzT_zC/exec"; 
 
         // DESIGNS
+        // NOTE: In the live environment below, we use 'placehold.co' URLs so the preview works immediately.
+        // WHEN DEPLOYING TO GITHUB: Replace the 'bgUrl' values with "1.png", "2.png", "3.png", "4.png"
+        // and ensure those image files are in the same folder as this index.html file.
         const designs = [
-            { id: 1, name: "Classic Blue", color: "#0284c7", textColor: "#1e293b", bgUrl: "1.png", textX: 760, textY: 550, textAlign: "right" },
-            { id: 2, name: "Medical Green", color: "#059669", textColor: "#064e3b", bgUrl: "3.png", textX: 760, textY: 550, textAlign: "right" },
-            { id: 3, name: "Minimalist", color: "#475569", textColor: "#0f172a", bgUrl: "4.png", textX: 760, textY: 550, textAlign: "right" },
-            { id: 4, name: "Warm Care", color: "#e11d48", textColor: "#881337", bgUrl: "2.png", textX: 760, textY: 550, textAlign: "right" }
+            { id: 1, name: "Option 1", color: "#2563EB", textColor: "#172554", bgUrl: "2 (2).jfif", textX: 400, textY: 330, textAlign: "center" },
+            { id: 2, name: "Option 2", color: "#059669", textColor: "#064e3b", bgUrl: "1.jfif", textX: 400, textY: 330, textAlign: "center" },
+            { id: 3, name: "Option 3", color: "#4B5563", textColor: "#111827", bgUrl: "3 (2).jfif", textX: 400, textY: 330, textAlign: "center" },
+            { id: 4, name: "Option 4", color: "#DC2626", textColor: "#fafafa", bgUrl: "4.png", textX: 400, textY: 330, textAlign: "center" }
         ];
 
-        // SETUP
+        // ==========================================
+        // APP LOGIC
+        // ==========================================
+        
         let selectedDesign = designs[0];
         const canvas = document.getElementById('previewCanvas');
         const ctx = canvas.getContext('2d');
         const nameInput = document.getElementById('nameInput');
+        const messageInput = document.getElementById('messageInput');
+        
+        // Counters
+        const nameCount = document.getElementById('nameCount');
+        const msgCount = document.getElementById('msgCount');
+
         const imageCache = {};
 
-        // INITIALIZE IMMEDIATELY (Don't wait for window.onload)
+        // Start immediately
         init();
 
         function init() {
             renderDesignGrid();
-            drawLoadingState(); // Show "Loading" text on canvas immediately
-            preloadImages();    // Start fetching images
+            drawLoadingState(); 
+            preloadImages();    
         }
 
         function renderDesignGrid() {
@@ -137,7 +174,8 @@
                 const div = document.createElement('div');
                 div.className = `design-card cursor-pointer rounded-lg overflow-hidden relative ${design.id === selectedDesign.id ? 'selected' : ''}`;
                 div.onclick = () => selectDesign(design);
-                div.innerHTML = `<div style="background-color: ${design.color}20; height: 80px;" class="flex items-center justify-center"><span style="color: ${design.color}" class="font-bold text-xs">${design.name}</span></div>`;
+                // Background opacity reduced slightly for better button visual
+                div.innerHTML = `<div style="background-color: ${design.color}15; height: 80px;" class="flex items-center justify-center"><span style="color: ${design.color}" class="font-bold text-xs">${design.name}</span></div>`;
                 grid.appendChild(div);
             });
         }
@@ -145,7 +183,7 @@
         function drawLoadingState() {
             ctx.fillStyle = "#f8fafc";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.font = "20px Lato";
+            ctx.font = "20px Lato, system-ui";
             ctx.fillStyle = "#94a3b8";
             ctx.textAlign = "center";
             ctx.fillText("Loading Preview...", canvas.width/2, canvas.height/2);
@@ -160,10 +198,7 @@
                     imageCache[design.bgUrl] = img;
                     if(selectedDesign.id === design.id) updateCanvas();
                 };
-                // Handle errors nicely
-                img.onerror = () => {
-                    console.error("Failed to load: " + design.bgUrl);
-                }
+                img.onerror = () => console.error("Failed to load: " + design.bgUrl);
             });
         }
 
@@ -174,12 +209,14 @@
         }
 
         function updateCanvas() {
-            // Check cache
+            // Update Character Counts
+            nameCount.innerText = `${nameInput.value.length}/25`;
+            msgCount.innerText = `${messageInput.value.length}/28`;
+
             if (imageCache[selectedDesign.bgUrl]) {
                 drawToCanvas(imageCache[selectedDesign.bgUrl]);
             } else {
                 drawLoadingState();
-                // If not cached yet, create a temp loader for this specific action
                 const img = new Image();
                 img.crossOrigin = "Anonymous";
                 img.src = selectedDesign.bgUrl;
@@ -190,36 +227,85 @@
             }
         }
 
+        // --- Helper function to calculate line breaks ---
+        function getLines(ctx, text, maxWidth) {
+            const words = text.split(" ");
+            const lines = [];
+            let currentLine = words[0];
+
+            for (let i = 1; i < words.length; i++) {
+                const word = words[i];
+                const width = ctx.measureText(currentLine + " " + word).width;
+                if (width < maxWidth) {
+                    currentLine += " " + word;
+                } else {
+                    lines.push(currentLine);
+                    currentLine = word;
+                }
+            }
+            lines.push(currentLine);
+            return lines;
+        }
+
         function drawToCanvas(img) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
             const name = nameInput.value ? "Dr. " + nameInput.value : "Dr. Name Here";
+            const message = messageInput.value;
             
-            // Font Scaling
-            let fontSize = 40;
-            // Use system font fallback until Google Font loads to prevent invisible text
+            ctx.fillStyle = selectedDesign.textColor;
+            const align = selectedDesign.textAlign || "center"; 
+            ctx.textAlign = align;
+
+            // --- 1. Draw Custom Message (Center, Above Name) ---
+            if (message) {
+                // Font Size: 16px (Small)
+                ctx.font = `italic bold 16px 'Playfair Display', serif, system-ui`;
+                // Position above the name.
+                ctx.fillText(message, selectedDesign.textX, selectedDesign.textY - 25);
+            }
+
+            // --- 2. Draw Doctor Name (Center, below message) ---
+            // Font Size: 18px (Small)
+            let fontSize = 18; 
             ctx.font = `bold ${fontSize}px 'Playfair Display', serif, system-ui`;
             
+            // Define Safety Width (60% of card width since it's centered)
             const maxTextWidth = canvas.width * 0.6; 
-            while (ctx.measureText(name).width > maxTextWidth && fontSize > 15) {
+            
+            // Shrink text slightly if it's huge, stop at 12px
+            while (ctx.measureText(name).width > maxTextWidth && fontSize > 12) {
                 fontSize -= 2;
                 ctx.font = `bold ${fontSize}px 'Playfair Display', serif, system-ui`;
             }
 
-            ctx.fillStyle = selectedDesign.textColor;
-            const align = selectedDesign.textAlign || "right";
-            ctx.textAlign = align;
-            ctx.fillText(name, selectedDesign.textX, selectedDesign.textY);
+            // Calculate Wrapping for Name
+            let lines = [name];
+            if (ctx.measureText(name).width > maxTextWidth) {
+                lines = getLines(ctx, name, maxTextWidth);
+            }
 
-            // Underline
-            const textWidth = ctx.measureText(name).width;
+            // Draw Name (Bottom-Up from anchor point)
+            const lineHeight = fontSize * 1.2;
+            let currentY = selectedDesign.textY; // Anchor point
+            
+            for (let i = lines.length - 1; i >= 0; i--) {
+                ctx.fillText(lines[i], selectedDesign.textX, currentY);
+                currentY -= lineHeight; // Move up for previous line
+            }
+
+            // Draw Underline (Under last line of name)
+            const lastLine = lines[lines.length - 1];
+            const textWidth = ctx.measureText(lastLine).width;
             let lineX;
+            
             if (align === "right") lineX = selectedDesign.textX - textWidth;
             else if (align === "left") lineX = selectedDesign.textX;
-            else lineX = selectedDesign.textX - (textWidth / 2);
+            else lineX = selectedDesign.textX - (textWidth / 2); // Center alignment
             
-            ctx.fillRect(lineX, selectedDesign.textY + 15, textWidth, 2);
+            // Adjusted underline position
+            ctx.fillRect(lineX, selectedDesign.textY + 10, textWidth, 2);
         }
 
         async function downloadCard() {
@@ -227,13 +313,12 @@
             const btnText = document.getElementById('btnText');
             const status = document.getElementById('statusMsg');
             const name = nameInput.value;
+            const message = messageInput.value;
 
             if(!name) { alert("Please enter your name first!"); nameInput.focus(); return; }
 
             btn.disabled = true;
             const originalText = btnText.innerText;
-            
-            // SVG Spinner
             btnText.innerHTML = "Processing...";
             status.classList.remove('hidden');
             status.innerText = "Saving record...";
@@ -246,6 +331,7 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             name: "Dr. " + name,
+                            message: message, 
                             design: selectedDesign.name,
                             timestamp: new Date().toISOString()
                         })
