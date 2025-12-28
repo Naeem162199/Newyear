@@ -212,7 +212,7 @@
         function updateCanvas() {
             // Update Character Counts
             nameCount.innerText = `${nameInput.value.length}/25`;
-            msgCount.innerText = `${messageInput.value.length}/28`;
+            msgCount.innerText = `${messageInput.value.length}/60`;
 
             if (imageCache[selectedDesign.bgUrl]) {
                 drawToCanvas(imageCache[selectedDesign.bgUrl]);
@@ -356,6 +356,7 @@
     </script>
 </body>
 </html>
+
 
 
 
